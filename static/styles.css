@@ -100,8 +100,9 @@ body{
   border:2px solid var(--accent);
   border-radius:26px;
   width:100%;
-  height:260px;
-  object-fit:cover;           /* ถ้าเป็น <img> จะครอบพอดีกรอบ */
+  height:auto;                /* ✅ ไม่บังคับความสูง — รูปไม่โดน crop */
+  max-height:480px;           /* ✅ กันรูปสูงเกินหน้าจอ */
+  object-fit:contain;         /* ✅ ย่อให้พอดีโดยไม่ตัดขอบ */
   box-shadow:var(--shadow);
   display:block;
 }
@@ -136,5 +137,5 @@ body{
       "result"
       "benefit";
   }
-  .photo-placeholder{height:220px}
+  .photo-placeholder{max-height:320px}
 }

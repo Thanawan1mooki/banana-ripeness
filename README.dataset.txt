@@ -1,5 +1,5 @@
-# Banana banana > 23/9
-https://universe.roboflow.com/banana-dpadx/banana-banana-svcdo
+# Banana Class Ripeness   > Last
+https://universe.roboflow.com/banana-dpadx/banana-class-ripeness-ow2rg
 
 Provided by a Roboflow user
 License: CC BY 4.0

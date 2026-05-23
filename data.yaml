@@ -3,11 +3,11 @@ val: ../valid/images
 test: ../test/images
 
 nc: 5
-names: ['overripe', 'raw', 'ripe', 'rotten', 'unripe']
+names: ['Overripe', 'Raw', 'Ripe', 'Rotten', 'Unripe']
 
 roboflow:
   workspace: banana-dpadx
-  project: banana-banana-svcdo
-  version: 1
+  project: banana-class-ripeness-ow2rg
+  version: 12
   license: CC BY 4.0
-  url: https://universe.roboflow.com/banana-dpadx/banana-banana-svcdo/dataset/1
+  url: https://universe.roboflow.com/banana-dpadx/banana-class-ripeness-ow2rg/dataset/12
