@@ -222,6 +222,5 @@ def index():
  
  
 if __name__ == "__main__":
-    # ✅ มี app.run() แค่อันเดียว — อันเก่ามีสองอัน อันที่สองไม่มีทางรันได้เลย
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False)
