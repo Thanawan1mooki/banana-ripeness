@@ -336,7 +336,6 @@ def detect_banana(image_path):
         gc.collect()
 
 
-# ── ส่วนที่เหลือเหมือนเดิมทุกอย่าง ──
 def _classify_ripeness_hsv(crop_bgr):
     hsv = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2HSV)
     mask_skin = cv2.inRange(hsv, np.array([0,25,45]), np.array([110,255,255]))
