@@ -236,11 +236,12 @@
 #     if model is not None:
 #         del model
 #     gc.collect()
+#bana,py
 import cv2
 import numpy as np
 import os
 import gc
-import onnxruntime as ort
+import onnxruntime as ort 
 
 def detect_banana(image_path):
     current_session = None
@@ -280,7 +281,7 @@ def detect_banana(image_path):
             x_c, y_c, w, h = pred[0], pred[1], pred[2], pred[3]
             confs = pred[4:]
             conf = float(np.max(confs))
-            if conf < 0.5:
+            if conf < 0.3:
                 continue
             # scale back to original
             x1 = int((x_c - w/2) / input_size * W_img)
@@ -336,20 +337,19 @@ def detect_banana(image_path):
         gc.collect()
 
 
-# ── ส่วนที่เหลือเหมือนเดิมทุกอย่าง ──
 def _classify_ripeness_hsv(crop_bgr):
     hsv = cv2.cvtColor(crop_bgr, cv2.COLOR_BGR2HSV)
-    mask_skin = cv2.inRange(hsv, np.array([0,25,45]), np.array([110,255,255]))
+    mask_skin = cv2.inRange(hsv, np.array([0,25,45]), np.array([70,255,255]))
     skin_pixels = cv2.countNonZero(mask_skin)
     if skin_pixels < 50:
         return "ripe"
-    mask_green = cv2.bitwise_and(cv2.inRange(hsv, np.array([32,20,20]), np.array([100,255,255])), mask_skin)
+    mask_green = cv2.bitwise_and(cv2.inRange(hsv, np.array([30,20,20]), np.array([60,255,255])), mask_skin)
     mask_dark  = cv2.bitwise_and(cv2.inRange(hsv, np.array([0,0,0]), np.array([180,255,85])), mask_skin)
-    mask_spots = cv2.bitwise_and(cv2.inRange(hsv, np.array([0,40,80]), np.array([25,255,180])), mask_skin)
+    mask_spots = cv2.bitwise_and(cv2.inRange(hsv, np.array([0,40,80]), np.array([17,255,180])), mask_skin)
     green_frac = cv2.countNonZero(mask_green) / skin_pixels
     dark_frac  = cv2.countNonZero(mask_dark)  / skin_pixels
     spot_frac  = cv2.countNonZero(mask_spots) / skin_pixels
-    if dark_frac > 0.40: return "rotten"
+    if dark_frac > 0.40: return "rotten" 
     elif green_frac > 0.75: return "raw"
     elif green_frac > 0.20: return "unripe"
     elif spot_frac > 0.12 or dark_frac > 0.12: return "overripe"
