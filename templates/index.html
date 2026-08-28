@@ -217,16 +217,38 @@
     <h1 class="section-title">Upload your Banana</h1>
 
     <form class="upload-card" method="post" enctype="multipart/form-data">
-      <label class="dropzone" for="image">
-        <input id="image" name="image" type="file" accept="image/*" required hidden />
-        <div class="drop-inner">
-          <div class="plus">+</div>
-          <div class="watermark">Banana</div>
-        </div>
-      </label>
+  <label class="dropzone" for="image">
+    <input id="image" name="image" type="file" accept="image/*" required hidden onchange="previewImage(event)" />
+    <div class="drop-inner" id="dropInner">
+      <div class="plus">+</div>
+      <div class="watermark">Banana</div>
+    </div>
+    <img id="preview" class="preview-img" src="#" alt="ตัวอย่างรูปภาพ" hidden />
+  </label>
 
-      <button class="btn primary" type="submit">UPLOAD</button>
-    </form>
+  <button class="btn primary" type="submit">UPLOAD</button>
+</form>
+
+<script>
+function previewImage(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('preview');
+  const dropInner = document.getElementById('dropInner');
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.hidden = false;
+      dropInner.hidden = true;   // ซ่อน + กับ watermark ตอนมีรูปแล้ว
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.hidden = true;
+    dropInner.hidden = false;
+  }
+}
+</script>
 
     {% if error_message %}
       <p class="error-message">{{ error_message }}</p>
