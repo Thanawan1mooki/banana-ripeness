@@ -263,8 +263,19 @@ def detect_banana(image_path):
         # Preprocess
         input_size = 640
         H_img, W_img = img.shape[:2]
-        img_resized = cv2.resize(img, (input_size, input_size))
-        img_rgb = cv2.cvtColor(img_resized, cv2.COLOR_BGR2RGB)
+        H_img, W_img = img.shape[:2]
+        
+        # คำนวณสัดส่วนและแปะขอบ (Letterbox) ไม่ให้รูปกล้วยเบี้ยว
+        scale = min(input_size / W_img, input_size / H_img)
+        nw, nh = int(W_img * scale), int(H_img * scale)
+        img_resized = cv2.resize(img, (nw, nh))
+
+        canvas = np.full((input_size, input_size, 3), 128, dtype=np.uint8)
+        dx = (input_size - nw) // 2
+        dy = (input_size - nh) // 2
+        canvas[dy:dy+nh, dx:dx+nw] = img_resized
+
+        img_rgb = cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
         img_input = img_rgb.astype(np.float32) / 255.0
         img_input = np.transpose(img_input, (2, 0, 1))
         img_input = np.expand_dims(img_input, axis=0)
