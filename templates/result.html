@@ -29,12 +29,13 @@
       <h2 class="subhead">ระดับความสุกของกล้วย</h2>
       <div class="para">
         
-        {% if results and results|length > 0 %}
+        % if results and results|length > 0 %}
           <ul class="plain-list">
             {% for r in results %}
               <li>
-                <span class="badge {{ r.label }}">{{ r.label }}</span> 
-                (Confidence: {{ r.confidence }})
+                <!-- เปลี่ยนตรงนี้เป็น r.label_th และเปลี่ยน Confidence เป็นภาษาไทย -->
+                <span class="badge {{ r.label }}">{{ r.label_th }}</span> 
+                (ความมั่นใจ: {{ r.confidence }})
               </li>
             {% endfor %}
           </ul>
