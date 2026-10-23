@@ -260,11 +260,10 @@ def detect_banana(image_path):
     labels_info = []
 
     try:
-        # Preprocess
+        # Preprocess with Letterbox (รองรับภาพทุกสัดส่วนและภาพแคปมือถือโดยไม่ทำให้กล้วยเบี้ยว)
         input_size = 640
         H_img, W_img = img.shape[:2]
         
-        # คำนวณสัดส่วนและแปะขอบ (Letterbox) ไม่ให้รูปกล้วยเบี้ยว
         scale = min(input_size / W_img, input_size / H_img)
         nw, nh = int(W_img * scale), int(H_img * scale)
         img_resized = cv2.resize(img, (nw, nh))
@@ -284,7 +283,7 @@ def detect_banana(image_path):
         outputs = current_session.run(None, {input_name: img_input})
         predictions = outputs[0][0]  # shape: (num_detections, 6+)
 
-        # Parse boxes (x1,y1,x2,y2,conf,cls) — YOLO format
+        # Parse boxes with Letterbox de-normalization
         boxes_raw = []
         for pred in predictions.T:
             x_c, y_c, w, h = pred[0], pred[1], pred[2], pred[3]
@@ -292,12 +291,20 @@ def detect_banana(image_path):
             conf = float(np.max(confs))
             if conf < 0.5:
                 continue
-            # scale back to original
-            x1 = int((x_c - w/2) / input_size * W_img)
-            y1 = int((y_c - h/2) / input_size * H_img)
-            x2 = int((x_c + w/2) / input_size * W_img)
-            y2 = int((y_c + h/2) / input_size * H_img)
-            boxes_raw.append([x1, y1, x2, y2, conf, 0])
+            
+            # แปลงพิกัดกลับสู่ภาพต้นฉบับโดยหักลบขอบ Letterbox (dx, dy) และหารด้วยสเกล
+            x1 = int(((x_c - w/2) - dx) / scale)
+            y1 = int(((y_c - h/2) - dy) / scale)
+            x2 = int(((x_c + w/2) - dx) / scale)
+            y2 = int(((y_c + h/2) - dy) / scale)
+            
+            x1 = max(0, min(W_img, x1))
+            y1 = max(0, min(H_img, y1))
+            x2 = max(0, min(W_img, x2))
+            y2 = max(0, min(H_img, y2))
+            
+            if x2 > x1 and y2 > y1:
+                boxes_raw.append([x1, y1, x2, y2, conf, 0])
 
         if not boxes_raw:
             cv2.imwrite(output_path, img)
@@ -305,7 +312,7 @@ def detect_banana(image_path):
 
         best_boxes = _filter_best_boxes(boxes_raw)
 
-        # ตัวแปรสำหรับแปลงคำศัพท์เป็นภาษาไทย
+        # ตัวแปรสำหรับแปลงคำศัพท์เป็นภาษาไทยสำหรับหน้าเว็บ
         thai_labels = {
             "raw": "ดิบ",
             "unripe": "ห่าม",
@@ -318,9 +325,6 @@ def detect_banana(image_path):
             x1, y1, x2, y2 = map(int, box[:4])
             conf = float(box[4])
 
-            x1 = max(0, x1); y1 = max(0, y1)
-            x2 = min(W_img, x2); y2 = min(H_img, y2)
-
             w_box, h_box = x2 - x1, y2 - y1
             cx1 = int(x1 + w_box * 0.20)
             cy1 = int(y1 + h_box * 0.20)
@@ -331,18 +335,25 @@ def detect_banana(image_path):
             if crop_analyze.size == 0:
                 continue
 
-            label = _classify_ripeness_hsv(crop_analyze)
-            label_th = thai_labels.get(label, label)  # แปลงเป็นภาษาไทย
+            label = _classify_ripeness_hsv(crop_analyze)  # ค่าภาษาอังกฤษสำหรับระบบและโภชนาการ
+            label_th = thai_labels.get(label, label)      # ค่าภาษาไทยสำหรับ UI
             color = _get_color(label)
 
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-            label_text = f"{label_th} ({conf:.2f})"
+            
+            # บนรูปภาพใช้ภาษาอังกฤษ ป้องกันเครื่องหมายคำถาม
+            label_text = f"{label} ({conf:.2f})"
             (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
             cv2.rectangle(img, (x1, y1 - 25), (x1 + tw, y1), color, -1)
             cv2.putText(img, label_text, (x1, y1 - 8),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (30, 30, 30), 2)
 
-            labels_info.append({"index": i+1, "label": label_th, "confidence": round(conf, 2)})
+            labels_info.append({
+                "index": i+1, 
+                "label": label,          # ส่งอังกฤษไปจับคู่โภชนาการใน app.py
+                "label_th": label_th,    # ส่งไทยไปโชว์ที่หน้าเว็บ
+                "confidence": round(conf, 2)
+            })
 
         cv2.imwrite(output_path, img)
         return labels_info, output_path
