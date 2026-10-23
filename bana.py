@@ -263,7 +263,6 @@ def detect_banana(image_path):
         # Preprocess
         input_size = 640
         H_img, W_img = img.shape[:2]
-        H_img, W_img = img.shape[:2]
         
         # คำนวณสัดส่วนและแปะขอบ (Letterbox) ไม่ให้รูปกล้วยเบี้ยว
         scale = min(input_size / W_img, input_size / H_img)
@@ -305,6 +304,8 @@ def detect_banana(image_path):
             return [], output_path
 
         best_boxes = _filter_best_boxes(boxes_raw)
+
+        # ตัวแปรสำหรับแปลงคำศัพท์เป็นภาษาไทย
         thai_labels = {
             "raw": "ดิบ",
             "unripe": "ห่าม",
@@ -331,16 +332,17 @@ def detect_banana(image_path):
                 continue
 
             label = _classify_ripeness_hsv(crop_analyze)
+            label_th = thai_labels.get(label, label)  # แปลงเป็นภาษาไทย
             color = _get_color(label)
 
             cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-            label_text = f"{label} ({conf:.2f})"
+            label_text = f"{label_th} ({conf:.2f})"
             (tw, th), _ = cv2.getTextSize(label_text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
             cv2.rectangle(img, (x1, y1 - 25), (x1 + tw, y1), color, -1)
             cv2.putText(img, label_text, (x1, y1 - 8),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (30, 30, 30), 2)
 
-            labels_info.append({"index": i+1, "label": label, "confidence": round(conf, 2)})
+            labels_info.append({"index": i+1, "label": label_th, "confidence": round(conf, 2)})
 
         cv2.imwrite(output_path, img)
         return labels_info, output_path
