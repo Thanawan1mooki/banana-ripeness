@@ -305,6 +305,13 @@ def detect_banana(image_path):
             return [], output_path
 
         best_boxes = _filter_best_boxes(boxes_raw)
+        thai_labels = {
+            "raw": "ดิบ",
+            "unripe": "ห่าม",
+            "ripe": "สุก",
+            "overripe": "งอม",
+            "rotten": "เน่า"
+        }
 
         for i, box in enumerate(best_boxes):
             x1, y1, x2, y2 = map(int, box[:4])
